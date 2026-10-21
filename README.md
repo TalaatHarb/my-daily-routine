@@ -30,6 +30,8 @@ infrastructure/
 
 Prerequisites: Node.js 22+, .NET 10 SDK, Docker.
 
+The root `.npmrc` pins the public npm registry for local, CI and Docker installs.
+
 ```powershell
 npm install                 # installs the web workspace
 npm run services:up         # Postgres on :5432, Keycloak on :8081 (realm imported, user demo/demo)
