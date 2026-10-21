@@ -55,3 +55,22 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Node / Vite
+node_modules/
+apps/web/dist/
+apps/web/dev-dist/
+apps/web/.vite/
+*.tsbuildinfo
+
+# Environment overrides
+.env.local
+.env.*.local
+apps/web/.env
+
+# Kubernetes secrets
+infrastructure/k8s/secrets/
+
+# IDE
+.vs/
+.idea/

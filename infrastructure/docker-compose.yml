@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: my-daily-routine-postgres
+    environment:
+      POSTGRES_USER: my_daily_routine
+      POSTGRES_PASSWORD: my_daily_routine
+      POSTGRES_DB: my_daily_routine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U my_daily_routine -d my_daily_routine"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: my-daily-routine-keycloak
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KC_HTTP_PORT: 8081
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      # Keycloak shares the application database but keeps its tables in the "keycloak" schema.
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: my_daily_routine
+      KC_DB_SCHEMA: keycloak
+      KC_DB_USERNAME: my_daily_routine
+      KC_DB_PASSWORD: my_daily_routine
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Optional: run the containerised API and web app (`docker compose --profile app up -d --build`).
+  api:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: my-daily-routine-api
+    environment:
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=my_daily_routine;Username=my_daily_routine;Password=my_daily_routine
+      Jwt__Authority: http://localhost:8081/realms/my-daily-routine
+      Jwt__MetadataAddress: http://keycloak:8081/realms/my-daily-routine/.well-known/openid-configuration
+      Jwt__Audience: my-daily-routine-web
+      Cors__AllowedOrigins: http://localhost:5173,http://localhost:8090
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    container_name: my-daily-routine-web
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+      VITE_OIDC_AUTHORITY: http://localhost:8081/realms/my-daily-routine
+      VITE_OIDC_CLIENT_ID: my-daily-routine-web
+      VITE_OIDC_REDIRECT_URI: http://localhost:8090
+    ports:
+      - "8090:80"
+
+volumes:
+  postgres-data:

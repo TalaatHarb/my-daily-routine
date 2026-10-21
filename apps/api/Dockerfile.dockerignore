@@ -1,0 +1,7 @@
+**
+!apps/
+!apps/api/
+!apps/api/src/
+!apps/api/src/**
+**/bin/
+**/obj/

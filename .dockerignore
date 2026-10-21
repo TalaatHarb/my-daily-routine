@@ -1,0 +1,12 @@
+.git
+.github
+**/node_modules
+**/bin
+**/obj
+**/.sdk
+**/TestResults
+apps/web/dist
+apps/web/dev-dist
+**/.env
+**/.env.local
+infrastructure/k8s/secrets

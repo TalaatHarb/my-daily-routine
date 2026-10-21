@@ -1,0 +1,23 @@
+{
+  "name": "my-daily-routine",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "web:dev": "npm --workspace apps/web run dev",
+    "web:build": "npm --workspace apps/web run build",
+    "web:lint": "npm --workspace apps/web run lint",
+    "web:test": "npm --workspace apps/web run test",
+    "api:dev": "dotnet run --project apps/api/src/MyDailyRoutine.Api --launch-profile http",
+    "api:build": "dotnet build apps/api/MyDailyRoutine.slnx",
+    "api:test": "dotnet test apps/api/MyDailyRoutine.slnx",
+    "services:up": "docker compose -f infrastructure/docker-compose.yml up -d postgres keycloak",
+    "services:down": "docker compose -f infrastructure/docker-compose.yml down",
+    "dev": "concurrently -n api,web -c blue,green \"npm:api:dev\" \"npm:web:dev\"",
+    "validate": "npm run web:lint && npm run web:test && npm run web:build && npm run api:build && npm run api:test"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

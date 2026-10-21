@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: my-daily-routine
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/talaatharb/my-daily-routine/web:latest
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: VITE_API_BASE_URL
+              value: https://mydailyroutine-api.talaatharb.net
+            - name: VITE_OIDC_AUTHORITY
+              value: https://mydailyroutine-auth.talaatharb.net/realms/my-daily-routine
+            - name: VITE_OIDC_CLIENT_ID
+              value: my-daily-routine-web
+            - name: VITE_OIDC_REDIRECT_URI
+              value: https://mydailyroutine.talaatharb.net
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: my-daily-routine
+  labels:
+    app: web
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: web
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  namespace: my-daily-routine
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - mydailyroutine.talaatharb.net
+      secretName: mydailyroutine-web-tls-secret
+  rules:
+    - host: mydailyroutine.talaatharb.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80

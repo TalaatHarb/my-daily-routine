@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="A simple daily task manager" />
+    <meta name="theme-color" content="#4f46e5" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <title>My Daily Routine</title>
+    <script>
+      // Apply persisted language direction and theme before first paint to avoid flashes.
+      try {
+        var lang = localStorage.getItem('mdr.lang') || (navigator.language || 'en').slice(0, 2)
+        if (lang === 'ar') {
+          document.documentElement.lang = 'ar'
+          document.documentElement.dir = 'rtl'
+        }
+        var theme = localStorage.getItem('mdr.theme')
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/env-config.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
