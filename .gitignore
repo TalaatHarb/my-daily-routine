@@ -70,6 +70,7 @@ apps/web/.env
 
 # Kubernetes secrets
 infrastructure/k8s/secrets/
+infrastructure/k8s/secrets.yaml
 
 # IDE
 .vs/
